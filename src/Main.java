@@ -1,3 +1,8 @@
+/*
+*Main Class
+*(Insert instructions)
+ */
+
 import java.io.*;
 import java.util.Scanner;
 public class Main {
