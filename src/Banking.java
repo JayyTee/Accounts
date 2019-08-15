@@ -1,62 +1,88 @@
 /*
-*Cant deposit negative numbers
-*validate withrawals and deposits (positive inputs only)
-*allow 2-point decimal format for all values
+*round value to 2 decimal places before inserting into table
  */
+import java.io.*;
 import java.io.IOException;
-import java.io.File;
-import java.util.ArrayList;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
-import org.jsoup.select.Elements;
-import java.io.*;
+import java.text.DecimalFormat;
+import java.math.*;
 
 public class Banking {
-    File logs = new File("log.html");
-    Document doc;
-    int total = 0;
+    File log;
+    Document doc; //parsed log.html file
+    double total;
+    DecimalFormat df = new DecimalFormat("####0.00");
 
-     public Banking(File log) throws IOException{
-         int i = 1;//iterator
-         this.doc =  Jsoup.parse(logs, "UTF-8");
-         // include log.html
-
-         ArrayList<Integer> list = new ArrayList<Integer>();
-
-
-        //insert after first td
-         doc.select("td:nth-of-type(1)").after("<td>800</td>");
-
-         //select data table from html
-         Element table = doc.select("table").get(0); //select the first table.
-         Elements rows = table.select("td");
-
-
-         System.out.println(doc);
-        //doc.select("table").select("td").get(0).after("<td>800<td>");
-
-
-        while(i < rows.size()){
-            list.add(Integer.parseInt(rows.get(i).html()));//insert element i into arraylist;
-            total += Integer.parseInt(rows.get(i).html());
-            i++;
-        }
-
-         System.out.println(total);
-
-         doc.select(".balance").html(Integer.toString(total));
-         System.out.println(list);
-
-         BufferedWriter bw = new BufferedWriter(new FileWriter(logs));
-         bw.write(doc.toString()); //toString will give all the elements as a big string
-         bw.close();  //Close to apply the changes
-//        int number = Integer.parseInt(rows.get(1).text());
-//        String content = rows.html();
-//        System.out.print(rows.length());
+    public Banking(File log) throws IOException{
+        this.log = log;
+        this.doc =  Jsoup.parse(log, "UTF-8");
+        this.total = Double.parseDouble(doc.select("td:nth-of-type(1)").html());
     }
 
-    public int getbalance(){
+    //insert changes into log.html
+    boolean updateLog()throws IOException{
+        doc.select(".balance").html(Double.toString(total)); //insert new balance into table
+        BufferedWriter bw = new BufferedWriter(new FileWriter(log));
+        bw.write(doc.toString()); //update table
+        bw.close();
+        return true;
+    }
+
+    //make deposit
+    public boolean deposit(String amount)throws IOException{
+        double parsedAmount = validate(amount);
+
+        if (parsedAmount == 0)
+            return false;
+        else{
+            total += parsedAmount;
+
+            doc.select("td:nth-of-type(1)").after("<td>" + parsedAmount + "</td>"); //insert after first td
+
+            updateLog();
+            return true;
+        }
+    }
+
+    public boolean withdraw(String amount) throws IOException{
+        double parsedAmount = validate(amount);
+        if (parsedAmount == 0)
+            return false;
+        else{
+            total -= parsedAmount;
+
+            doc.select("td:nth-of-type(1)").after("<td>" + parsedAmount + "</td>"); //insert after first td
+
+            updateLog();
+            return true;
+        }
+    }
+
+    //validate input
+    public double validate(String amount){
+        double n;
+
+        try{
+            n = Double.parseDouble(amount);
+
+        }
+        catch(Exception e)
+        {
+            return 0;
+        }
+
+        if(BigDecimal.valueOf(n).scale() > 2)
+            return 0;
+
+        if(n > -1)
+            return n;
+        else{
+            return 0;
+        }
+    }
+
+    public double getbalance(){
         return total;
     }
 }

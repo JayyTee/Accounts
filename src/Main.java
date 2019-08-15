@@ -10,7 +10,7 @@ public class Main {
         File logs = new File("log.html");
         String input = null;
         Scanner scan = new Scanner(System.in);
-        String prompt = "please enter a command(deposit, withdraw, balance, exit)";
+        String prompt = "please enter a command(deposit, withdraw, balance, exit): ";
         Banking account1 = new Banking(logs);
 
 
@@ -20,13 +20,23 @@ public class Main {
 
             switch (input) {
                 case "deposit":
-                    System.out.println("depositMethod");
-                    input = null;
+                    while(account1.validate(input) == 0){
+                        System.out.println("Please enter an amount:");
+                        input = scan.next();
+                        account1.deposit(input);
+                    }
 
+                    input = null;
                     break;
 
                 case "withdraw":
-                    System.out.println("withdrawMethod");
+                    while(account1.validate(input) == 0)
+                    {
+                        System.out.println("Please enter an amount:");
+                        input = scan.next();
+                        account1.deposit(input);
+                    }
+
                     input = null;
                     break;
 
@@ -34,6 +44,7 @@ public class Main {
                     System.out.println("your balance is $" + account1.getbalance());
                     input = null;
                     break;
+
                 case "exit":
                     return;
             }
