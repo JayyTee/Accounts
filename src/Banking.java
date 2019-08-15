@@ -9,10 +9,10 @@ import java.text.DecimalFormat;
 import java.math.*;
 
 public class Banking {
-    File log;
-    Document doc; //parsed log.html file
-    double total;
-    DecimalFormat df = new DecimalFormat("####0.00");
+   private File log;
+   private Document doc; //parsed log.html file
+   private double total;
+   private DecimalFormat df = new DecimalFormat("####0.00");
 
     public Banking(File log) throws IOException{
         this.log = log;
