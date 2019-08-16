@@ -1,5 +1,5 @@
 /*
-*round value to 2 decimal places before inserting into table
+*Add file-open validation
  */
 import java.io.*;
 import java.io.IOException;
@@ -20,46 +20,43 @@ public class Banking {
         this.total = Double.parseDouble(doc.select("td:nth-of-type(1)").html());
     }
 
-    //insert changes into log.html
-    boolean updateLog()throws IOException{
-        doc.select(".balance").html(Double.toString(total)); //insert new balance into table
-        BufferedWriter bw = new BufferedWriter(new FileWriter(log));
-        bw.write(doc.toString()); //update table
-        bw.close();
-        return true;
-    }
-
-    //make deposit
+    //return value of validated inputs
     public boolean deposit(String amount)throws IOException{
         double parsedAmount = validate(amount);
 
         if (parsedAmount == 0)
             return false;
         else{
-            total += parsedAmount;
-
-            doc.select("td:nth-of-type(1)").after("<td>" + parsedAmount + "</td>"); //insert after first td
-
-            updateLog();
+            updateLog(parsedAmount);
             return true;
         }
     }
 
+    //parse and validate string input using deposit() and return negated value
     public boolean withdraw(String amount) throws IOException{
         double parsedAmount = validate(amount);
+
         if (parsedAmount == 0)
             return false;
         else{
-            total -= parsedAmount;
-
-            doc.select("td:nth-of-type(1)").after("<td>" + parsedAmount + "</td>"); //insert after first td
-
-            updateLog();
+            updateLog(parsedAmount * -1);
             return true;
         }
     }
 
-    //validate input
+    //insert changes into parsed document and update log.html
+    boolean updateLog(double parsedAmount)throws IOException{
+        total += parsedAmount;
+        doc.select("td:last-of-type").after("<td>" + parsedAmount + "</td>"); //insert after first td
+
+        doc.select(".balance").html(df.format(total)); //insert new balance into table
+        BufferedWriter bw = new BufferedWriter(new FileWriter(log));
+        bw.write(doc.toString()); //update table
+        bw.close();
+        return true;
+    }
+
+    //validate input (return 0 if number has more than 2 decimals or is negative else return parsed input)
     public double validate(String amount){
         double n;
 
@@ -67,8 +64,7 @@ public class Banking {
             n = Double.parseDouble(amount);
 
         }
-        catch(Exception e)
-        {
+        catch(Exception e){
             return 0;
         }
 
@@ -82,7 +78,7 @@ public class Banking {
         }
     }
 
-    public double getbalance(){
-        return total;
+    public String getbalance(){
+        return df.format(total);
     }
 }
